@@ -76,4 +76,8 @@ public interface TlsClient
      */
     void notifyNewSessionTicket(NewSessionTicket newSessionTicket)
         throws IOException;
+    
+    short getClientCertificateType();
+    
+    short getServerCertificateType();
 }

@@ -33,6 +33,14 @@ public class TlsECCUtils
         "sect571k1", "sect571r1", "secp160k1", "secp160r1", "secp160r2", "secp192k1", "secp192r1", "secp224k1",
         "secp224r1", "secp256k1", "secp256r1", "secp384r1", "secp521r1", };
 
+    private static final int[] curveNumbers = new int[] {NamedCurve.sect163k1, NamedCurve.sect163r1,
+    	NamedCurve.sect163r2, NamedCurve.sect193r1, NamedCurve.sect193r2, NamedCurve.sect233k1,
+    	NamedCurve.sect233r1, NamedCurve.sect239k1, NamedCurve.sect283k1, NamedCurve.sect283r1,
+    	NamedCurve.sect409k1, NamedCurve.sect409r1, NamedCurve.sect571k1, NamedCurve.sect571r1,
+    	NamedCurve.secp160k1, NamedCurve.secp160r1, NamedCurve.secp160r2, NamedCurve.secp192k1,
+    	NamedCurve.secp192r1, NamedCurve.secp224k1, NamedCurve.secp224r1, NamedCurve.secp256k1,
+    	NamedCurve.secp256r1, NamedCurve.secp384r1, NamedCurve.secp521r1, };
+
     public static void addSupportedEllipticCurvesExtension(Hashtable extensions, int[] namedCurves) throws IOException
     {
         extensions.put(EXT_elliptic_curves, createSupportedEllipticCurvesExtension(namedCurves));
@@ -630,4 +638,22 @@ public class TlsECCUtils
         TlsUtils.checkUint16(namedCurve);
         TlsUtils.writeUint16(namedCurve, output);
     }
+
+    private static int[] getIntersection(int[] a, int[] b) {
+    	int[] result = new int[(int)Math.min(a.length, b.length)];
+    	int i = 0;
+        for(int f = 0; f < a.length; f++){
+             for(int k = 0; k < b.length; k++){
+                   if( a[f] == b[k] ) {
+                   result[i] = a[f];
+                   i++;
+           }
+         }
+       }
+        return result;
+    }
+
+	public static int[] filterSupportedEllipticCurves(int[] namedCurves) {
+		return getIntersection(curveNumbers, namedCurves);
+	}
 }

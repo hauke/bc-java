@@ -52,4 +52,6 @@ public class ExtensionType
      * RFC 5746 3.2.
      */
     public static final int renegotiation_info = 0xff01;
+    public static final int client_certificate_type = 122;
+    public static final int server_certificate_type = 123;
 }

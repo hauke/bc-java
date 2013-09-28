@@ -848,7 +848,7 @@ public abstract class TlsProtocol
          * secure. Perhaps there could be an option to (re-)enable it. Instead, we seed the random
          * source with the current time to retain it's main benefit.
          */
-//        TlsUtils.writeGMTUnixTime(result, 0);
+        TlsUtils.writeGMTUnixTime(result, 0);
         return result;
     }
 

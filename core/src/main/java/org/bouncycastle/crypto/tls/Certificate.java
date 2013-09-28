@@ -29,6 +29,8 @@ public class Certificate
 
     protected org.bouncycastle.asn1.x509.Certificate[] certificateList;
 
+    protected org.bouncycastle.asn1.x509.SubjectPublicKeyInfo pubKey;
+
     public Certificate(org.bouncycastle.asn1.x509.Certificate[] certificateList)
     {
         if (certificateList == null)
@@ -37,6 +39,16 @@ public class Certificate
         }
 
         this.certificateList = certificateList;
+    }
+
+    public Certificate(org.bouncycastle.asn1.x509.SubjectPublicKeyInfo pubKey)
+    {
+        if (pubKey == null)
+        {
+            throw new IllegalArgumentException("'Public key' cannot be null");
+        }
+
+        this.pubKey = pubKey;
     }
 
     /**
@@ -60,10 +72,25 @@ public class Certificate
     {
         return certificateList[index];
     }
+    
+    public org.bouncycastle.asn1.x509.SubjectPublicKeyInfo getRawKey() {
+    	return pubKey;
+    }
 
     public int getLength()
     {
+    	if (pubKey != null) {
+    		return 1;
+    	}
         return certificateList.length;
+    }
+    
+    public boolean isx509Certificate() {
+    	return certificateList != null;
+    }
+    
+    public boolean isPubKey() {
+    	return pubKey != null;
     }
 
     /**
@@ -72,7 +99,10 @@ public class Certificate
      */
     public boolean isEmpty()
     {
-        return certificateList.length == 0;
+    	if (pubKey != null) {
+    		return false;
+    	}
+    	return certificateList.length == 0;
     }
 
     /**
@@ -139,9 +169,38 @@ public class Certificate
         }
         return new Certificate(certificateList);
     }
+    
+    /**
+     * Parse a {@link Certificate} from an {@link InputStream}.
+     *
+     * @param input the {@link InputStream} to parse from.
+     * @return a {@link Certificate} object.
+     * @throws IOException
+     */
+    public static Certificate parsePubKey(InputStream input)
+        throws IOException
+    {
+        int totalLength = TlsUtils.readUint24(input);
+        if (totalLength == 0)
+        {
+            return null;
+        }
+
+        int length = TlsUtils.readUint24(input);
+        if (length + 3 != totalLength) {
+        	return null;
+        }
+        byte[] pubKey = TlsUtils.readFully(length, input);
+
+        ASN1Primitive asn1PubKey = TlsUtils.readDERObject(pubKey);
+        return new Certificate(org.bouncycastle.asn1.x509.SubjectPublicKeyInfo.getInstance(asn1PubKey));
+    }
 
     protected org.bouncycastle.asn1.x509.Certificate[] cloneCertificateList()
     {
+    	if (certificateList == null) {
+    	  return null;
+    	}
         org.bouncycastle.asn1.x509.Certificate[] result = new org.bouncycastle.asn1.x509.Certificate[certificateList.length];
         System.arraycopy(certificateList, 0, result, 0, result.length);
         return result;

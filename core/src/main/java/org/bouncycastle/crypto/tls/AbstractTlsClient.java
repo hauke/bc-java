@@ -1,6 +1,7 @@
 package org.bouncycastle.crypto.tls;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -14,6 +15,8 @@ public abstract class AbstractTlsClient
 
     protected Vector supportedSignatureAlgorithms;
     protected int[] namedCurves;
+    protected short certTypeServer = TLSCertificateTye.X509;
+    protected short certTypeClient = TLSCertificateTye.X509;
     protected short[] clientECPointFormats, serverECPointFormats;
 
     protected int selectedCipherSuite;
@@ -126,6 +129,11 @@ public abstract class AbstractTlsClient
             TlsECCUtils.addSupportedEllipticCurvesExtension(clientExtensions, namedCurves);
             TlsECCUtils.addSupportedPointFormatsExtension(clientExtensions, clientECPointFormats);
         }
+        
+        short[] certTypesServer = new short[] {TLSCertificateTye.X509, TLSCertificateTye.Raw};
+        short[] certTypesClient = new short[] {TLSCertificateTye.X509, TLSCertificateTye.Raw};
+        TlsUtils.addClientCertTypeExtension(clientExtensions, certTypesServer);
+        TlsUtils.addServerCertTypeExtension(clientExtensions, certTypesClient);
 
         return clientExtensions;
     }
@@ -163,6 +171,7 @@ public abstract class AbstractTlsClient
     {
         this.selectedCompressionMethod = selectedCompressionMethod;
     }
+    
 
     public void processServerExtensions(Hashtable serverExtensions)
         throws IOException
@@ -184,13 +193,26 @@ public abstract class AbstractTlsClient
             int[] namedCurves = TlsECCUtils.getSupportedEllipticCurvesExtension(serverExtensions);
             if (namedCurves != null)
             {
-                throw new TlsFatalAlert(AlertDescription.illegal_parameter);
+            	this.namedCurves = TlsECCUtils.filterSupportedEllipticCurves(namedCurves);
+            	if (this.namedCurves == null || this.namedCurves.length == 0) {
+                    throw new TlsFatalAlert(AlertDescription.illegal_parameter);
+            	}
             }
 
             this.serverECPointFormats = TlsECCUtils.getSupportedPointFormatsExtension(serverExtensions);
             if (this.serverECPointFormats != null && !TlsECCUtils.isECCCipherSuite(this.selectedCipherSuite))
             {
                 throw new TlsFatalAlert(AlertDescription.illegal_parameter);
+            }
+
+            this.certTypeClient = TlsUtils.getClientCertTypeExtension(serverExtensions);
+            if (!TlsUtils.certTypeSupported(this.certTypeClient) ) {
+            	 throw new TlsFatalAlert(AlertDescription.illegal_parameter);
+            }
+
+            this.certTypeServer = TlsUtils.getServerCertTypeExtension(serverExtensions);
+            if (!TlsUtils.certTypeSupported(this.certTypeServer) ) {
+            	 throw new TlsFatalAlert(AlertDescription.illegal_parameter);
             }
         }
     }
@@ -231,5 +253,13 @@ public abstract class AbstractTlsClient
     public void notifyNewSessionTicket(NewSessionTicket newSessionTicket)
         throws IOException
     {
+    }
+    
+    public short getServerCertificateType(){
+    	return certTypeServer;
+    }
+
+    public short getClientCertificateType(){
+    	return certTypeClient;
     }
 }

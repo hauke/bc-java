@@ -68,6 +68,7 @@ public class DTLSClientProtocol
         }
         catch (RuntimeException e)
         {
+        	e.printStackTrace();
             recordLayer.fail(AlertDescription.internal_error);
             throw new TlsFatalAlert(AlertDescription.internal_error);
         }
@@ -555,7 +556,12 @@ public class DTLSClientProtocol
     {
         ByteArrayInputStream buf = new ByteArrayInputStream(body);
 
-        Certificate serverCertificate = Certificate.parse(buf);
+        Certificate serverCertificate = null;
+        if (state.client.getServerCertificateType() == TLSCertificateTye.X509){
+           serverCertificate = Certificate.parse(buf);
+        } else if (state.client.getServerCertificateType() == TLSCertificateTye.Raw){
+        	serverCertificate = Certificate.parsePubKey(buf);	
+        }
 
         TlsProtocol.assertEmpty(buf);
 
