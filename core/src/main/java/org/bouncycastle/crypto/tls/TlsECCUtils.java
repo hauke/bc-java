@@ -246,6 +246,14 @@ public class TlsECCUtils
         case CipherSuite.TLS_ECDHE_PSK_WITH_RC4_128_SHA:
 
         /*
+         * draft-mcgrew-tls-aes-ccm-ecc-07
+         */
+        case CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CCM:
+        case CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CCM:
+        case CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8:
+        case CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CCM_8:
+
+        /*
          * draft-josefsson-salsa20-tls-02 
          */
         case CipherSuite.TLS_ECDHE_ECDSA_WITH_ESTREAM_SALSA20_SHA1:
