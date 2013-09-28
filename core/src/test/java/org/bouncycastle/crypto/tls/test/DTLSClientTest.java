@@ -26,7 +26,7 @@ public class DTLSClientTest
         throws Exception
     {
         InetAddress address = InetAddress.getLocalHost();
-        int port = 5556;
+        int port = 20220;
 
         TlsSession session = createSession(address, port);
 

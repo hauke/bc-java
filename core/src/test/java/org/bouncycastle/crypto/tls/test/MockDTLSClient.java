@@ -54,12 +54,12 @@ public class MockDTLSClient
 
     public ProtocolVersion getClientVersion()
     {
-        return ProtocolVersion.DTLSv10;
+        return ProtocolVersion.DTLSv12;
     }
 
     public ProtocolVersion getMinimumVersion()
     {
-        return ProtocolVersion.DTLSv10;
+        return ProtocolVersion.DTLSv12;
     }
 
     public TlsAuthentication getAuthentication()
