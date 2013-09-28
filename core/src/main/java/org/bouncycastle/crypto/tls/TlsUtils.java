@@ -47,6 +47,10 @@ public class TlsUtils
 
     public static final Integer EXT_signature_algorithms = Integers.valueOf(ExtensionType.signature_algorithms);
 
+    public static final Integer EXT_client_certificate_type = Integers.valueOf(ExtensionType.client_certificate_type);
+
+    public static final Integer EXT_server_certificate_type = Integers.valueOf(ExtensionType.server_certificate_type);
+
     public static void checkUint8(short i) throws IOException
     {
         if (!isValidUint8(i))
@@ -824,6 +828,68 @@ public class TlsUtils
         }
         return supportedSignatureAlgorithms;
     }
+    
+    public static void addClientCertTypeExtension(Hashtable extensions, short[] supportedCertificateTypes)
+            throws IOException
+        {
+            extensions.put(EXT_client_certificate_type, createCertTypeExtension(supportedCertificateTypes));
+        }
+    public static void addServerCertTypeExtension(Hashtable extensions, short[] supportedCertificateTypes)
+            throws IOException
+        {
+            extensions.put(EXT_server_certificate_type, createCertTypeExtension(supportedCertificateTypes));
+        }
+
+    public static byte[] createCertTypeExtension(short[] supportedCertificateTypes)
+            throws IOException
+        {
+        if (supportedCertificateTypes == null || supportedCertificateTypes.length < 1)
+        {
+            throw new TlsFatalAlert(AlertDescription.internal_error);
+        }
+
+        return TlsUtils.encodeUint8ArrayWithUint8Length(supportedCertificateTypes);
+        }
+
+
+    public static short getClientCertTypeExtension(Hashtable extensions) throws IOException
+    {
+        byte[] extensionData = TlsUtils.getExtensionData(extensions, EXT_client_certificate_type);
+        return extensionData == null ? null : readSupportedCertTypeExtension(extensionData);
+    }
+
+    public static short getServerCertTypeExtension(Hashtable extensions) throws IOException
+    {
+        byte[] extensionData = TlsUtils.getExtensionData(extensions, EXT_server_certificate_type);
+        return extensionData == null ? null : readSupportedCertTypeExtension(extensionData);
+    }
+    
+    public static short readSupportedCertTypeExtension(byte[] extensionData) throws IOException
+    {
+        if (extensionData == null)
+        {
+            throw new IllegalArgumentException("'certificateTypes' cannot be null");
+        }
+
+        ByteArrayInputStream buf = new ByteArrayInputStream(extensionData);
+
+        short certificateType = TlsUtils.readUint8(buf);
+
+        TlsProtocol.assertEmpty(buf);
+
+        return certificateType;
+    }
+    
+    private static final short[] certTypes = new short[]{TLSCertificateTye.X509, TLSCertificateTye.Raw, };
+
+	public static boolean certTypeSupported(short certType) {
+	    for (int i = 0; i < certTypes.length; i++) {
+		    if (certTypes[i] == certType){
+			    return true;
+		    }
+	    }
+	    return false;
+	}
 
     public static byte[] PRF(TlsContext context, byte[] secret, String asciiLabel, byte[] seed, int size)
     {

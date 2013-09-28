@@ -30,6 +30,12 @@ public abstract class DefaultTlsServer
         throw new TlsFatalAlert(AlertDescription.internal_error);
     }
 
+    protected TlsSignerCredentials getECDSASignerCredentials()
+            throws IOException
+        {
+            throw new TlsFatalAlert(AlertDescription.internal_error);
+        }
+
     protected DHParameters getDHParameters()
     {
         return DHStandardGroups.rfc5114_1024_160;
@@ -94,6 +100,25 @@ public abstract class DefaultTlsServer
         case CipherSuite.TLS_ECDHE_RSA_WITH_NULL_SHA:
         case CipherSuite.TLS_ECDHE_RSA_WITH_RC4_128_SHA:
             return getRSASignerCredentials();
+
+        case CipherSuite.TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA:
+        case CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA:
+        case CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256:
+        case CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256:
+        case CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA:
+        case CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384:
+        case CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384:
+        case CipherSuite.TLS_ECDHE_ECDSA_WITH_ESTREAM_SALSA20_SHA1:
+        case CipherSuite.TLS_ECDHE_ECDSA_WITH_ESTREAM_SALSA20_UMAC96:
+        case CipherSuite.TLS_ECDHE_ECDSA_WITH_NULL_SHA:
+        case CipherSuite.TLS_ECDHE_ECDSA_WITH_RC4_128_SHA:
+        case CipherSuite.TLS_ECDHE_ECDSA_WITH_SALSA20_SHA1:
+        case CipherSuite.TLS_ECDHE_ECDSA_WITH_SALSA20_UMAC96:
+        case CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CCM:
+        case CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CCM:
+        case CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8:
+        case CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CCM_8:
+            return getECDSASignerCredentials();
 
         default:
             /*

@@ -61,18 +61,9 @@ public abstract class TlsDSASigner
     protected Signer makeSigner(SignatureAndHashAlgorithm algorithm, boolean raw, boolean forSigning,
         CipherParameters cp)
     {
-        if ((algorithm != null) != TlsUtils.isTLSv12(context))
-        {
-            throw new IllegalStateException();
-        }
 
-        if (algorithm != null
-            && (algorithm.getHash() != HashAlgorithm.sha1 || algorithm.getSignature() != getSignatureAlgorithm()))
-        {
-            throw new IllegalStateException();
-        }
 
-        Digest d = raw ? new NullDigest() : TlsUtils.createHash(HashAlgorithm.sha1);
+        Digest d = raw ? new NullDigest() : TlsUtils.createHash(HashAlgorithm.sha256);
 
         Signer s = new DSADigestSigner(createDSAImpl(), d);
         s.init(forSigning, cp);
