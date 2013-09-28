@@ -200,6 +200,10 @@ public abstract class DefaultTlsServer
         case CipherSuite.TLS_ECDHE_ECDSA_WITH_RC4_128_SHA:
         case CipherSuite.TLS_ECDHE_ECDSA_WITH_SALSA20_SHA1:
         case CipherSuite.TLS_ECDHE_ECDSA_WITH_SALSA20_UMAC96:
+        case CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CCM:
+        case CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CCM:
+        case CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8:
+        case CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CCM_8:
             return createECDHEKeyExchange(KeyExchangeAlgorithm.ECDHE_ECDSA);
 
         case CipherSuite.TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA:
@@ -290,10 +294,14 @@ public abstract class DefaultTlsServer
 
         case CipherSuite.TLS_DHE_RSA_WITH_AES_128_CCM:
         case CipherSuite.TLS_RSA_WITH_AES_128_CCM:
+        case CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CCM:
+        case CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CCM:
             return cipherFactory.createCipher(context, EncryptionAlgorithm.AES_128_CCM, MACAlgorithm._null);
 
         case CipherSuite.TLS_DHE_RSA_WITH_AES_128_CCM_8:
         case CipherSuite.TLS_RSA_WITH_AES_128_CCM_8:
+        case CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8:
+        case CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CCM_8:
             return cipherFactory.createCipher(context, EncryptionAlgorithm.AES_128_CCM_8, MACAlgorithm._null);
 
         case CipherSuite.TLS_DH_DSS_WITH_AES_128_GCM_SHA256:
