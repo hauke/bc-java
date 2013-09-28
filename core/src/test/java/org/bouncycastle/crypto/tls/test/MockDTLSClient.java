@@ -65,7 +65,7 @@ public class MockDTLSClient
 
     public ProtocolVersion getMinimumVersion()
     {
-        return ProtocolVersion.DTLSv10;
+        return ProtocolVersion.DTLSv12;
     }
 
     public Hashtable getClientExtensions() throws IOException
