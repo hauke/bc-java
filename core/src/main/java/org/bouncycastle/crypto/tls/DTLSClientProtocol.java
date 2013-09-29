@@ -193,7 +193,6 @@ public class DTLSClientProtocol
 
         state.keyExchange = state.client.getKeyExchange();
         state.keyExchange.init(state.clientContext);
-        
 
         Certificate serverCertificate = null;
 
