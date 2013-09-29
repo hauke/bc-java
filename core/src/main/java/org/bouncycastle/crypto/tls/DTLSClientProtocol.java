@@ -308,7 +308,7 @@ public class DTLSClientProtocol
             /*
              * TODO RFC 5246 4.7. digitally-signed element needs SignatureAndHashAlgorithm from TLS 1.2
              */
-            SignatureAndHashAlgorithm algorithm = null;
+            SignatureAndHashAlgorithm algorithm = new SignatureAndHashAlgorithm(HashAlgorithm.sha256, SignatureAlgorithm.ecdsa);
             byte[] hash = handshake.getCurrentHash();
             byte[] signature = signerCredentials.generateCertificateSignature(hash);
             DigitallySigned certificateVerify = new DigitallySigned(algorithm, signature);

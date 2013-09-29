@@ -17,6 +17,11 @@ public abstract class AbstractTlsSigner
     public byte[] generateRawSignature(AsymmetricKeyParameter privateKey, byte[] md5AndSha1)
         throws CryptoException
     {
+        if(TlsUtils.isTLSv12(context))
+        {
+            SignatureAndHashAlgorithm algo = new SignatureAndHashAlgorithm(HashAlgorithm.sha256, SignatureAlgorithm.rsa);
+            return generateRawSignature(algo, privateKey, md5AndSha1);    
+        } 
         return generateRawSignature(null, privateKey, md5AndSha1);
     }
 

@@ -3,14 +3,28 @@ package org.bouncycastle.crypto.tls.test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Vector;
 
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.pkcs.RSAPrivateKey;
+import org.bouncycastle.asn1.sec.ECPrivateKey;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x9.ECNamedCurveTable;
+import org.bouncycastle.asn1.x9.X962Parameters;
+import org.bouncycastle.asn1.x9.X9ECParameters;
+import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
+import org.bouncycastle.crypto.params.ECDomainParameters;
+import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters;
-import org.bouncycastle.crypto.tls.CertificateX509;
-import org.bouncycastle.crypto.tls.CertificateRaw;
 import org.bouncycastle.crypto.tls.Certificate;
+import org.bouncycastle.crypto.tls.CertificateRaw;
+import org.bouncycastle.crypto.tls.CertificateX509;
 import org.bouncycastle.crypto.tls.DefaultTlsAgreementCredentials;
 import org.bouncycastle.crypto.tls.DefaultTlsEncryptionCredentials;
 import org.bouncycastle.crypto.tls.DefaultTlsSignerCredentials;
@@ -162,10 +176,10 @@ public class TlsTestUtils
         throws IOException
     {
 
-        PemObject pem = loadPemResource(resource);
-        if (pem.getType().endsWith("CERTIFICATE"))
+        Vector pem = loadPemResource(resource);
+        if (pem.size() >= 1 && ((PemObject)pem.get(0)).getType().endsWith("CERTIFICATE"))
         {
-            return org.bouncycastle.asn1.x509.Certificate.getInstance(pem.getContent());
+            return org.bouncycastle.asn1.x509.Certificate.getInstance(((PemObject)pem.get(0)).getContent());
         }
         throw new IllegalArgumentException("'resource' doesn't specify a valid certificate");
     }
@@ -173,30 +187,65 @@ public class TlsTestUtils
     static AsymmetricKeyParameter loadPrivateKeyResource(String resource)
         throws IOException
     {
-
-        PemObject pem = loadPemResource(resource);
-        if (pem.getType().endsWith("RSA PRIVATE KEY"))
+        Vector pem = loadPemResource(resource);
+        
+        if (pem.size() >= 1 && ((PemObject)pem.get(0)).getType().endsWith("RSA PRIVATE KEY"))
         {
-            RSAPrivateKey rsa = RSAPrivateKey.getInstance(pem.getContent());
+            RSAPrivateKey rsa = RSAPrivateKey.getInstance(((PemObject)pem.get(0)).getContent());
             return new RSAPrivateCrtKeyParameters(rsa.getModulus(), rsa.getPublicExponent(),
                 rsa.getPrivateExponent(), rsa.getPrime1(), rsa.getPrime2(), rsa.getExponent1(),
                 rsa.getExponent2(), rsa.getCoefficient());
         }
-        if (pem.getType().endsWith("PRIVATE KEY"))
+        if (pem.size() >= 2 && ((PemObject)pem.get(0)).getType().endsWith("EC PARAMETERS") && ((PemObject)pem.get(1)).getType().endsWith("EC PRIVATE KEY"))
         {
-            return PrivateKeyFactory.createKey(pem.getContent());
+            return readEccKey(((PemObject)pem.get(0)).getContent(), ((PemObject)pem.get(1)).getContent());
+        }
+        if (pem.size() >= 2 && ((PemObject)pem.get(0)).getType().endsWith("EC PRIVATE KEY") && ((PemObject)pem.get(1)).getType().endsWith("EC PARAMETERS"))
+        {
+            return readEccKey(((PemObject)pem.get(1)).getContent(), ((PemObject)pem.get(0)).getContent());
+        }
+        if (pem.size() >= 1 && ((PemObject)pem.get(0)).getType().endsWith("PRIVATE KEY"))
+        {
+            return PrivateKeyFactory.createKey(((PemObject)pem.get(0)).getContent());
         }
         throw new IllegalArgumentException("'resource' doesn't specify a valid private key");
     }
-
-    static PemObject loadPemResource(String resource)
+    
+    private static ECPrivateKeyParameters readEccKey(byte[] params, byte[] key)
         throws IOException
     {
+        X962Parameters x962params = X962Parameters.getInstance(ASN1Primitive.fromByteArray(params));
 
+        X9ECParameters x9;
+        if (x962params.isNamedCurve())
+        {
+            ASN1ObjectIdentifier oid = ASN1ObjectIdentifier.getInstance(x962params.getParameters());
+            x9 = ECNamedCurveTable.getByOID(oid);
+        }
+        else
+        {
+            x9 = X9ECParameters.getInstance(x962params.getParameters());
+        }
+
+        ECPrivateKey ec = ECPrivateKey.getInstance(key);
+        BigInteger d = ec.getKey();
+
+        ECDomainParameters dParams = new ECDomainParameters(
+                x9.getCurve(), x9.getG(), x9.getN(), x9.getH(), x9.getSeed());
+
+        return new ECPrivateKeyParameters(d, dParams);
+    }
+
+    static Vector loadPemResource(String resource)
+        throws IOException
+    {
         InputStream s = TlsTestUtils.class.getResourceAsStream(resource);
         PemReader p = new PemReader(new InputStreamReader(s));
-        PemObject o = p.readPemObject();
+        Vector result = new Vector();
+        for (PemObject o = p.readPemObject(); o != null; o = p.readPemObject()) {
+            result.add(o);
+        }
         p.close();
-        return o;
+        return result;
     }
 }
