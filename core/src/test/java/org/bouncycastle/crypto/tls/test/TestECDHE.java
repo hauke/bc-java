@@ -44,7 +44,7 @@ public class TestECDHE {
 System.out.println("certificateTypes: "+ certificateTypes);
                         // TODO Create a distinct client certificate for use here
                         return TlsTestUtils.loadRawSignerCredentials(context, 
-                                "x509-server.pem", "x509-server-key.pem");
+                                "x509-ecdsa-server.pem", "x509-ecdsa-server-key.pem");
         }
 
     };
