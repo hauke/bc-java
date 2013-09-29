@@ -36,7 +36,8 @@ public class CertificateRaw implements Certificate
     }
 
     
-	public SubjectPublicKeyInfo getFirstSubjectPublicKeyInfo() {
+	public SubjectPublicKeyInfo getFirstSubjectPublicKeyInfo()
+	{
 		return pubKey;
 	}
 
@@ -51,7 +52,7 @@ public class CertificateRaw implements Certificate
      */
     public boolean isEmpty()
     {
-    	return pubKey != null;
+    	return pubKey == null;
     }
 
     /**
@@ -64,6 +65,7 @@ public class CertificateRaw implements Certificate
         throws IOException
     {
         byte[] derEncoding = pubKey.getEncoded(ASN1Encoding.DER);
+        TlsUtils.writeUint24(derEncoding.length + 3, output);
         TlsUtils.writeOpaque24(derEncoding, output);
     }
     

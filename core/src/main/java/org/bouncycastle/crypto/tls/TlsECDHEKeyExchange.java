@@ -141,7 +141,6 @@ public class TlsECDHEKeyExchange
         ECDomainParameters curve_params = TlsECCUtils.readECParameters(namedCurves, clientECPointFormats, teeIn);
 
         byte[] point = TlsUtils.readOpaque8(teeIn);
-        System.out.println(point.length);
 
         DigitallySigned signed_params = DigitallySigned.parse(context, input);
 

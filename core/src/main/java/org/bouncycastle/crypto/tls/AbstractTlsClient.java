@@ -130,8 +130,19 @@ public abstract class AbstractTlsClient
             TlsECCUtils.addSupportedPointFormatsExtension(clientExtensions, clientECPointFormats);
         }
 
-        TlsUtils.addClientCertTypeExtension(clientExtensions, getServerCertificateFormats());
-        TlsUtils.addServerCertTypeExtension(clientExtensions, getClientCertificateFormats());
+        short[] serverCertificateFormats = getServerCertificateFormats();
+        if (serverCertificateFormats != null &&
+            !(serverCertificateFormats.length == 1 && serverCertificateFormats[0] == TLSCertificateTye.X509))
+        {
+            TlsUtils.addServerCertTypeExtension(clientExtensions, serverCertificateFormats);
+        }
+
+        short[] clientCertificateFormats = getClientCertificateFormats();
+        if (clientCertificateFormats != null &&
+                !(clientCertificateFormats.length == 1 && clientCertificateFormats[0] == TLSCertificateTye.X509))
+        {
+            TlsUtils.addClientCertTypeExtension(clientExtensions, clientCertificateFormats);
+        }
 
         return clientExtensions;
     }

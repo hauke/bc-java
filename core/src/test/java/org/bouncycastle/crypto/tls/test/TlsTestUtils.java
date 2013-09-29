@@ -9,6 +9,8 @@ import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters;
 import org.bouncycastle.crypto.tls.CertificateX509;
+import org.bouncycastle.crypto.tls.CertificateRaw;
+import org.bouncycastle.crypto.tls.Certificate;
 import org.bouncycastle.crypto.tls.DefaultTlsAgreementCredentials;
 import org.bouncycastle.crypto.tls.DefaultTlsEncryptionCredentials;
 import org.bouncycastle.crypto.tls.DefaultTlsSignerCredentials;
@@ -79,7 +81,7 @@ public class TlsTestUtils
         throws IOException
     {
 
-        CertificateX509 certificate = loadCertificateChain(certResources);
+        Certificate certificate = loadCertificateChain(certResources);
         AsymmetricKeyParameter privateKey = loadPrivateKeyResource(keyResource);
 
         return new DefaultTlsAgreementCredentials(certificate, privateKey);
@@ -90,7 +92,7 @@ public class TlsTestUtils
         throws IOException
     {
 
-        CertificateX509 certificate = loadCertificateChain(certResources);
+        Certificate certificate = loadCertificateChain(certResources);
         AsymmetricKeyParameter privateKey = loadPrivateKeyResource(keyResource);
 
         return new DefaultTlsEncryptionCredentials(context, certificate, privateKey);
@@ -101,7 +103,7 @@ public class TlsTestUtils
         throws IOException
     {
 
-        CertificateX509 certificate = loadCertificateChain(certResources);
+        Certificate certificate = loadCertificateChain(certResources);
         AsymmetricKeyParameter privateKey = loadPrivateKeyResource(keyResource);
 
         return new DefaultTlsSignerCredentials(context, certificate, privateKey);
@@ -117,6 +119,43 @@ public class TlsTestUtils
             chain[i] = loadCertificateResource(resources[i]);
         }
         return new CertificateX509(chain);
+    }
+
+    static TlsAgreementCredentials loadRawAgreementCredentials(TlsContext context,
+            String certResources, String keyResource) throws IOException
+    {
+
+        Certificate certificate = loadSubjectPublicKey(certResources);
+        AsymmetricKeyParameter privateKey = loadPrivateKeyResource(keyResource);
+
+        return new DefaultTlsAgreementCredentials(certificate, privateKey);
+    }
+
+    static TlsEncryptionCredentials loadRawEncryptionCredentials(TlsContext context,
+            String certResources, String keyResource) throws IOException
+    {
+
+        Certificate certificate = loadSubjectPublicKey(certResources);
+        AsymmetricKeyParameter privateKey = loadPrivateKeyResource(keyResource);
+
+        return new DefaultTlsEncryptionCredentials(context, certificate, privateKey);
+    }
+
+    static TlsSignerCredentials loadRawSignerCredentials(TlsContext context, String certResources,
+            String keyResource) throws IOException
+    {
+
+        Certificate certificate = loadSubjectPublicKey(certResources);
+        AsymmetricKeyParameter privateKey = loadPrivateKeyResource(keyResource);
+
+        return new DefaultTlsSignerCredentials(context, certificate, privateKey);
+    }
+    
+    static CertificateRaw loadSubjectPublicKey(String resources) throws IOException
+    {
+        org.bouncycastle.asn1.x509.Certificate cert = loadCertificateResource(resources);
+
+        return new CertificateRaw(cert.getSubjectPublicKeyInfo());
     }
 
     static org.bouncycastle.asn1.x509.Certificate loadCertificateResource(String resource)
