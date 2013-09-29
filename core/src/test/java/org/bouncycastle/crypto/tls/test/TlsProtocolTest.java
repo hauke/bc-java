@@ -77,6 +77,50 @@ public class TlsProtocolTest
             {
 //                throw new RuntimeException(e);
             }
+            if (cause != null)
+            {
+                cause.printStackTrace(out);
+            }
+        }
+
+        public void notifyAlertReceived(short alertLevel, short alertDescription)
+        {
+            PrintStream out = (alertLevel == AlertLevel.fatal) ? System.err : System.out;
+            out.println("TLS server received alert (AlertLevel." + alertLevel + ", AlertDescription."
+                + alertDescription + ")");
+        }
+
+        public CertificateRequest getCertificateRequest()
+        {
+            return new CertificateRequest(new short[]{ ClientCertificateType.rsa_sign }, null, null);
+        }
+
+        public void notifyClientCertificate(org.bouncycastle.crypto.tls.CertificateX509 clientCertificate)
+            throws IOException
+        {
+            Certificate[] chain = clientCertificate.getCertificateList();
+            System.out.println("Received client certificate chain of length " + chain.length);
+            for (int i = 0; i != chain.length; i++)
+            {
+                Certificate entry = chain[i];
+                // TODO Create fingerprint based on certificate signature algorithm digest
+                System.out.println("    fingerprint:SHA-256 " + TlsTestUtils.fingerprint(entry) + " ("
+                    + entry.getSubject() + ")");
+            }
+        }
+
+        protected TlsEncryptionCredentials getRSAEncryptionCredentials()
+            throws IOException
+        {
+            return TlsTestUtils.loadEncryptionCredentials(context, new String[]{"x509-server.pem", "x509-ca.pem"},
+                "x509-server-key.pem");
+        }
+
+        protected TlsSignerCredentials getRSASignerCredentials()
+            throws IOException
+        {
+            return TlsTestUtils.loadSignerCredentials(context, new String[]{"x509-server.pem", "x509-ca.pem"},
+                "x509-server-key.pem");
         }
     }
 }

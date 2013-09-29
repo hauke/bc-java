@@ -23,4 +23,8 @@ public interface TlsAuthentication
      */
     TlsCredentials getClientCredentials(CertificateRequest certificateRequest)
         throws IOException;
+    
+    short[] getSupportedClientCredentialFormats();
+    
+    short[] getSupportedServerCredentialFormats();
 }

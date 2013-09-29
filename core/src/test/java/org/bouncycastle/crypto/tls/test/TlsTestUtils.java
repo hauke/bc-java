@@ -8,7 +8,7 @@ import org.bouncycastle.asn1.pkcs.RSAPrivateKey;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters;
-import org.bouncycastle.crypto.tls.Certificate;
+import org.bouncycastle.crypto.tls.CertificateX509;
 import org.bouncycastle.crypto.tls.DefaultTlsAgreementCredentials;
 import org.bouncycastle.crypto.tls.DefaultTlsEncryptionCredentials;
 import org.bouncycastle.crypto.tls.DefaultTlsSignerCredentials;
@@ -79,7 +79,7 @@ public class TlsTestUtils
         String[] certResources, String keyResource)
         throws IOException
     {
-        Certificate certificate = loadCertificateChain(certResources);
+        CertificateX509 certificate = loadCertificateChain(certResources);
         AsymmetricKeyParameter privateKey = loadPrivateKeyResource(keyResource);
 
         return new DefaultTlsAgreementCredentials(certificate, privateKey);
@@ -89,7 +89,7 @@ public class TlsTestUtils
         String[] certResources, String keyResource)
         throws IOException
     {
-        Certificate certificate = loadCertificateChain(certResources);
+        CertificateX509 certificate = loadCertificateChain(certResources);
         AsymmetricKeyParameter privateKey = loadPrivateKeyResource(keyResource);
 
         return new DefaultTlsEncryptionCredentials(context, certificate, privateKey);
@@ -99,13 +99,13 @@ public class TlsTestUtils
         String keyResource, SignatureAndHashAlgorithm signatureAndHashAlgorithm)
         throws IOException
     {
-        Certificate certificate = loadCertificateChain(certResources);
+        CertificateX509 certificate = loadCertificateChain(certResources);
         AsymmetricKeyParameter privateKey = loadPrivateKeyResource(keyResource);
 
         return new DefaultTlsSignerCredentials(context, certificate, privateKey, signatureAndHashAlgorithm);
     }
 
-    static Certificate loadCertificateChain(String[] resources)
+    static CertificateX509 loadCertificateChain(String[] resources)
         throws IOException
     {
         org.bouncycastle.asn1.x509.Certificate[] chain = new org.bouncycastle.asn1.x509.Certificate[resources.length];
@@ -113,7 +113,7 @@ public class TlsTestUtils
         {
             chain[i] = loadCertificateResource(resources[i]);
         }
-        return new Certificate(chain);
+        return new CertificateX509(chain);
     }
 
     static org.bouncycastle.asn1.x509.Certificate loadCertificateResource(String resource)

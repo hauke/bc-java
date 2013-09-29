@@ -49,9 +49,18 @@ public abstract class DTLSProtocol
         return maxFragmentLength;
     }
 
-    protected static byte[] generateCertificate(Certificate certificate)
+    protected static byte[] generateCertificate(Certificate certificate, int type)
         throws IOException
     {
+        if (type == TLSCertificateTye.X509 && !(certificate instanceof CertificateX509))
+        {
+            throw new TlsFatalAlert(AlertDescription.internal_error);
+        }
+        if (type == TLSCertificateTye.Raw && !(certificate instanceof CertificateRaw))
+        {
+            throw new TlsFatalAlert(AlertDescription.internal_error);
+        }
+
         ByteArrayOutputStream buf = new ByteArrayOutputStream();
         certificate.encode(buf);
         return buf.toByteArray();

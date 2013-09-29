@@ -15,12 +15,12 @@ public abstract class AbstractTlsClient
 
     protected Vector supportedSignatureAlgorithms;
     protected int[] namedCurves;
-    protected short certTypeServer = TLSCertificateTye.X509;
-    protected short certTypeClient = TLSCertificateTye.X509;
     protected short[] clientECPointFormats, serverECPointFormats;
 
     protected int selectedCipherSuite;
     protected short selectedCompressionMethod;
+    protected short selectedClientCertificateFormat = TLSCertificateTye.X509;
+    protected short selectedServerCertificateFormat = TLSCertificateTye.X509;
 
     public AbstractTlsClient()
     {
@@ -129,11 +129,9 @@ public abstract class AbstractTlsClient
             TlsECCUtils.addSupportedEllipticCurvesExtension(clientExtensions, namedCurves);
             TlsECCUtils.addSupportedPointFormatsExtension(clientExtensions, clientECPointFormats);
         }
-        
-        short[] certTypesServer = new short[] {TLSCertificateTye.X509, TLSCertificateTye.Raw};
-        short[] certTypesClient = new short[] {TLSCertificateTye.X509, TLSCertificateTye.Raw};
-        TlsUtils.addClientCertTypeExtension(clientExtensions, certTypesServer);
-        TlsUtils.addServerCertTypeExtension(clientExtensions, certTypesClient);
+
+        TlsUtils.addClientCertTypeExtension(clientExtensions, getServerCertificateFormats());
+        TlsUtils.addServerCertTypeExtension(clientExtensions, getClientCertificateFormats());
 
         return clientExtensions;
     }
@@ -157,6 +155,18 @@ public abstract class AbstractTlsClient
         return new short[]{CompressionMethod._null};
     }
 
+    public short[] getServerCertificateFormats()
+         throws IOException
+    {
+        return new short[]{TLSCertificateTye.X509};
+    }
+
+    public short[] getClientCertificateFormats()
+        throws IOException
+    {
+        return new short[]{TLSCertificateTye.X509};
+    }
+
     public void notifySessionID(byte[] sessionID)
     {
         // Currently ignored
@@ -172,6 +182,15 @@ public abstract class AbstractTlsClient
         this.selectedCompressionMethod = selectedCompressionMethod;
     }
     
+    public void notifySelectedClientCertificateFormat(short selectedClientCertificateFormat)
+            throws IOException {
+        this.selectedClientCertificateFormat = selectedClientCertificateFormat;
+    }
+
+    public void notifySelectedServerCertificateFormat(short selectedServerCertificateFormat)
+            throws IOException {
+        this.selectedServerCertificateFormat = selectedServerCertificateFormat;
+    }
 
     public void processServerExtensions(Hashtable serverExtensions)
         throws IOException
@@ -203,16 +222,6 @@ public abstract class AbstractTlsClient
             if (this.serverECPointFormats != null && !TlsECCUtils.isECCCipherSuite(this.selectedCipherSuite))
             {
                 throw new TlsFatalAlert(AlertDescription.illegal_parameter);
-            }
-
-            this.certTypeClient = TlsUtils.getClientCertTypeExtension(serverExtensions);
-            if (!TlsUtils.certTypeSupported(this.certTypeClient) ) {
-            	 throw new TlsFatalAlert(AlertDescription.illegal_parameter);
-            }
-
-            this.certTypeServer = TlsUtils.getServerCertTypeExtension(serverExtensions);
-            if (!TlsUtils.certTypeSupported(this.certTypeServer) ) {
-            	 throw new TlsFatalAlert(AlertDescription.illegal_parameter);
             }
         }
     }
@@ -253,13 +262,5 @@ public abstract class AbstractTlsClient
     public void notifyNewSessionTicket(NewSessionTicket newSessionTicket)
         throws IOException
     {
-    }
-    
-    public short getServerCertificateType(){
-    	return certTypeServer;
-    }
-
-    public short getClientCertificateType(){
-    	return certTypeClient;
     }
 }

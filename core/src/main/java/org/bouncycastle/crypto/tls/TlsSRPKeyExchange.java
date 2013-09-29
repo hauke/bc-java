@@ -85,9 +85,7 @@ public class TlsSRPKeyExchange extends AbstractTlsKeyExchange
             throw new TlsFatalAlert(AlertDescription.bad_certificate);
         }
 
-        org.bouncycastle.asn1.x509.Certificate x509Cert = serverCertificate.getCertificateAt(0);
-
-        SubjectPublicKeyInfo keyInfo = x509Cert.getSubjectPublicKeyInfo();
+        SubjectPublicKeyInfo keyInfo = serverCertificate.getFirstSubjectPublicKeyInfo();
         try
         {
             this.serverPublicKey = PublicKeyFactory.createKey(keyInfo);
@@ -102,7 +100,12 @@ public class TlsSRPKeyExchange extends AbstractTlsKeyExchange
             throw new TlsFatalAlert(AlertDescription.certificate_unknown);
         }
 
-        TlsUtils.validateKeyUsage(x509Cert, KeyUsage.digitalSignature);
+        if (serverCertificate instanceof CertificateX509)
+        {
+            org.bouncycastle.asn1.x509.Certificate x509Cert = ((CertificateX509)serverCertificate).getCertificateAt(0);
+        
+            TlsUtils.validateKeyUsage(x509Cert, KeyUsage.digitalSignature);
+        }
 
         super.processServerCertificate(serverCertificate);
     }

@@ -14,6 +14,8 @@ public class TlsExtensionsUtils
     public static final Integer EXT_server_name = Integers.valueOf(ExtensionType.server_name);
     public static final Integer EXT_status_request = Integers.valueOf(ExtensionType.status_request);
     public static final Integer EXT_truncated_hmac = Integers.valueOf(ExtensionType.truncated_hmac);
+    public static final Integer EXT_client_certificate_type = Integers.valueOf(ExtensionType.client_certificate_type);
+    public static final Integer EXT_server_certificate_type = Integers.valueOf(ExtensionType.server_certificate_type);
 
     public static Hashtable ensureExtensionsInitialised(Hashtable extensions)
     {
@@ -69,6 +71,34 @@ public class TlsExtensionsUtils
         byte[] extensionData = TlsUtils.getExtensionData(extensions, EXT_server_name);
         return extensionData == null ? null : readServerNameExtension(extensionData);
     }
+
+    public static short getServerCertificateFormatExtensionServerHello(Hashtable extensions)
+            throws IOException
+        {
+            byte[] extensionData = TlsUtils.getExtensionData(extensions, EXT_server_certificate_type);
+            return extensionData == null ? null : readCertifiacteTypeExtensionServerHello(extensionData);
+        }
+
+    public static short getClientCertificateFormatExtensionServerHello(Hashtable extensions)
+            throws IOException
+        {
+            byte[] extensionData = TlsUtils.getExtensionData(extensions, EXT_client_certificate_type);
+            return extensionData == null ? null : readCertifiacteTypeExtensionServerHello(extensionData);
+        }
+
+    public static short[] getServerCertificateFormatExtensionClientHello(Hashtable extensions)
+            throws IOException
+        {
+            byte[] extensionData = TlsUtils.getExtensionData(extensions, EXT_server_certificate_type);
+            return extensionData == null ? null : readCertifiacteTypeExtensionClientHello(extensionData);
+        }
+
+    public static short[] getClientCertificateFormatExtensionClientHello(Hashtable extensions)
+            throws IOException
+        {
+            byte[] extensionData = TlsUtils.getExtensionData(extensions, EXT_client_certificate_type);
+            return extensionData == null ? null : readCertifiacteTypeExtensionClientHello(extensionData);
+        }
 
     public static CertificateStatusRequest getStatusRequestExtension(Hashtable extensions)
         throws IOException
@@ -205,6 +235,46 @@ public class TlsExtensionsUtils
 
         return serverNameList;
     }
+
+    public static short readCertifiacteTypeExtensionServerHello(byte[] extensionData)
+            throws IOException
+        {
+            if (extensionData == null)
+            {
+                throw new IllegalArgumentException("'extensionData' cannot be null");
+            }
+            if (extensionData.length != 1)
+            {
+                throw new TlsFatalAlert(AlertDescription.decode_error);
+            }
+
+            short certificateType = TlsUtils.readUint8(extensionData, 0);
+
+            return certificateType;
+        }
+
+    public static short[] readCertifiacteTypeExtensionClientHello(byte[] extensionData)
+            throws IOException
+        {
+            if (extensionData == null)
+            {
+                throw new IllegalArgumentException("'extensionData' cannot be null");
+            }
+
+            short length = TlsUtils.readUint8(extensionData, 0);
+
+            if (extensionData.length != length + 1)
+            {
+                throw new TlsFatalAlert(AlertDescription.decode_error);
+            }
+
+            short[] certificateTypes = new short[length];
+            for(int i = 0; i < length; i++) {
+                certificateTypes[i] = extensionData[i+1];
+            }
+
+            return certificateTypes;
+        }
 
     public static CertificateStatusRequest readStatusRequestExtension(byte[] extensionData)
         throws IOException

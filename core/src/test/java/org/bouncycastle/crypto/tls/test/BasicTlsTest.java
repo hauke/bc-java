@@ -11,7 +11,7 @@ import junit.framework.TestSuite;
 import org.bouncycastle.crypto.tls.AlertDescription;
 import org.bouncycastle.crypto.tls.AlertLevel;
 import org.bouncycastle.crypto.tls.AlwaysValidVerifyer;
-import org.bouncycastle.crypto.tls.Certificate;
+import org.bouncycastle.crypto.tls.CertificateX509;
 import org.bouncycastle.crypto.tls.CipherSuite;
 import org.bouncycastle.crypto.tls.DefaultTlsClient;
 import org.bouncycastle.crypto.tls.LegacyTlsClient;
@@ -142,7 +142,7 @@ public class BasicTlsTest
         TlsKeyExchange keyExchange = client.getKeyExchange();
 
         keyExchange
-            .processServerCertificate(new Certificate(
+            .processServerCertificate(new CertificateX509(
                 new org.bouncycastle.asn1.x509.Certificate[]{org.bouncycastle.asn1.x509.Certificate
                     .getInstance(encCert)}));
     }

@@ -1194,8 +1194,13 @@ public class TlsUtils
             return -1;
         }
 
-        org.bouncycastle.asn1.x509.Certificate x509Cert = clientCertificate.getCertificateAt(0);
-        SubjectPublicKeyInfo keyInfo = x509Cert.getSubjectPublicKeyInfo();
+        org.bouncycastle.asn1.x509.Certificate x509Cert = null;
+        if (clientCertificate instanceof CertificateX509)
+        {
+            x509Cert = ((CertificateX509)clientCertificate).getCertificateAt(0);    
+        }
+
+        SubjectPublicKeyInfo keyInfo = clientCertificate.getFirstSubjectPublicKeyInfo();
         try
         {
             AsymmetricKeyParameter publicKey = PublicKeyFactory.createKey(keyInfo);
@@ -1221,7 +1226,10 @@ public class TlsUtils
              */
             if (publicKey instanceof RSAKeyParameters)
             {
-                validateKeyUsage(x509Cert, KeyUsage.digitalSignature);
+                if (x509Cert != null)
+                {
+                    validateKeyUsage(x509Cert, KeyUsage.digitalSignature);
+                }
                 return ClientCertificateType.rsa_sign;
             }
 
@@ -1231,7 +1239,10 @@ public class TlsUtils
              */
             if (publicKey instanceof DSAPublicKeyParameters)
             {
-                validateKeyUsage(x509Cert, KeyUsage.digitalSignature);
+                if (x509Cert != null)
+                {
+                    validateKeyUsage(x509Cert, KeyUsage.digitalSignature);
+                }
                 return ClientCertificateType.dss_sign;
             }
 
@@ -1242,7 +1253,10 @@ public class TlsUtils
              */
             if (publicKey instanceof ECPublicKeyParameters)
             {
-                validateKeyUsage(x509Cert, KeyUsage.digitalSignature);
+                if (x509Cert != null)
+                {
+                    validateKeyUsage(x509Cert, KeyUsage.digitalSignature);
+                }
                 // TODO Check the curve and point format
                 return ClientCertificateType.ecdsa_sign;
             }

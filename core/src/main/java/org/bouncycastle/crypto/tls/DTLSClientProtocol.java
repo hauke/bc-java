@@ -193,6 +193,7 @@ public class DTLSClientProtocol
 
         state.keyExchange = state.client.getKeyExchange();
         state.keyExchange.init(state.clientContext);
+        
 
         Certificate serverCertificate = null;
 
@@ -288,12 +289,12 @@ public class DTLSClientProtocol
             {
                 clientCertificate = state.clientCredentials.getCertificate();
             }
-            if (clientCertificate == null)
+            if (state.selectedClientCertificateFormat == TLSCertificateTye.X509 && clientCertificate == null)
             {
-                clientCertificate = Certificate.EMPTY_CHAIN;
+                clientCertificate = CertificateX509.EMPTY_CHAIN;
             }
 
-            byte[] certificateBody = generateCertificate(clientCertificate);
+            byte[] certificateBody = generateCertificate(clientCertificate, state.selectedClientCertificateFormat);
             handshake.sendMessage(HandshakeType.certificate, certificateBody);
         }
 
@@ -587,10 +588,10 @@ public class DTLSClientProtocol
         ByteArrayInputStream buf = new ByteArrayInputStream(body);
 
         Certificate serverCertificate = null;
-        if (state.client.getServerCertificateType() == TLSCertificateTye.X509){
-           serverCertificate = Certificate.parse(buf);
-        } else if (state.client.getServerCertificateType() == TLSCertificateTye.Raw){
-        	serverCertificate = Certificate.parsePubKey(buf);	
+        if (state.selectedServerCertificateFormat == TLSCertificateTye.X509) {
+           serverCertificate = CertificateX509.parse(buf);
+        } else if (state.selectedServerCertificateFormat == TLSCertificateTye.Raw) {
+        	serverCertificate = CertificateRaw.parse(buf);	
         }
 
         TlsProtocol.assertEmpty(buf);
@@ -723,6 +724,11 @@ public class DTLSClientProtocol
 
             state.maxFragmentLength = evaluateMaxFragmentLengthExtension(state.clientExtensions, serverExtensions,
                 AlertDescription.illegal_parameter);
+            
+            state.selectedClientCertificateFormat = evaluateClientCertificateFormat(state.clientExtensions,
+                    serverExtensions);
+            state.selectedServerCertificateFormat = evaluateServerCertificateFormat(state.clientExtensions,
+                    serverExtensions);
 
             securityParameters.truncatedHMac = TlsExtensionsUtils.hasTruncatedHMacExtension(serverExtensions);
 
@@ -739,6 +745,34 @@ public class DTLSClientProtocol
         {
             state.client.processServerExtensions(serverExtensions);
         }
+    }
+
+    private short evaluateServerCertificateFormat(Hashtable clientExtensions, Hashtable serverExtensions)
+      throws IOException
+    {
+        short serverCertificateFormat = TlsExtensionsUtils.getServerCertificateFormatExtensionServerHello(serverExtensions);
+        short[] offseredServerCertificateFormats = TlsExtensionsUtils.getServerCertificateFormatExtensionClientHello(clientExtensions);
+        for (int i = 0; i < offseredServerCertificateFormats.length ; i++) {
+            if (serverCertificateFormat == offseredServerCertificateFormats[i])
+            {
+                return serverCertificateFormat;
+            }
+        }
+        throw new TlsFatalAlert(AlertDescription.illegal_parameter);
+    }
+
+    private short evaluateClientCertificateFormat(Hashtable clientExtensions, Hashtable serverExtensions)
+            throws IOException
+    {
+        short clientCertificateFormat = TlsExtensionsUtils.getClientCertificateFormatExtensionServerHello(serverExtensions);
+        short[] offseredClientCertificateFormats = TlsExtensionsUtils.getClientCertificateFormatExtensionClientHello(clientExtensions);
+        for (int i = 0; i < offseredClientCertificateFormats.length ; i++) {
+            if (clientCertificateFormat == offseredClientCertificateFormats[i])
+            {
+                return clientCertificateFormat;
+            }
+        }
+        throw new TlsFatalAlert(AlertDescription.illegal_parameter);
     }
 
     protected void processServerKeyExchange(ClientHandshakeState state, byte[] body)
@@ -808,6 +842,8 @@ public class DTLSClientProtocol
         byte[] selectedSessionID = null;
         int selectedCipherSuite = -1;
         short selectedCompressionMethod = -1;
+        short selectedServerCertificateFormat = TLSCertificateTye.X509;
+        short selectedClientCertificateFormat = TLSCertificateTye.X509;
         boolean secure_renegotiation = false;
         short maxFragmentLength = -1;
         boolean allowCertificateStatus = false;

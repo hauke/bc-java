@@ -15,7 +15,13 @@ public interface TlsServer
         throws IOException;
 
     void notifyOfferedCompressionMethods(short[] offeredCompressionMethods)
-        throws IOException;
+            throws IOException;
+
+    void notifyOfferedClientCertificateFormats(short[] offeredClientCertificateFormat)
+            throws IOException;
+
+    void notifyOfferedServerCertificateFormats(short[] offeredServerCertificateFormat)
+            throws IOException;
 
     // Hashtable is (Integer -> byte[])
     void processClientExtensions(Hashtable clientExtensions)
@@ -29,6 +35,12 @@ public interface TlsServer
 
     short getSelectedCompressionMethod()
         throws IOException;
+
+    short getSelectedServerCertificateFormat()
+            throws IOException;
+
+    short getSelectedClientCertificateFormat()
+            throws IOException;
 
     // Hashtable is (Integer -> byte[])
     Hashtable getServerExtensions()
