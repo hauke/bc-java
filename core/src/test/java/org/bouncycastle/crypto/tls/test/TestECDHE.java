@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.security.SecureRandom;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.bouncycastle.crypto.tls.Certificate;
@@ -13,18 +12,12 @@ import org.bouncycastle.crypto.tls.DTLSClientProtocol;
 import org.bouncycastle.crypto.tls.DTLSTransport;
 import org.bouncycastle.crypto.tls.DatagramTransport;
 import org.bouncycastle.crypto.tls.DefaultTlsClient;
-import org.bouncycastle.crypto.tls.PSKTlsClient;
 import org.bouncycastle.crypto.tls.ProtocolVersion;
 import org.bouncycastle.crypto.tls.ServerOnlyTlsAuthentication;
 import org.bouncycastle.crypto.tls.TlsAuthentication;
-import org.bouncycastle.crypto.tls.TlsCipherFactory;
-import org.bouncycastle.crypto.tls.TlsPSKIdentity;
 import org.bouncycastle.crypto.tls.UDPTransport;
 
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
-
 public class TestECDHE {
-
 
 	public static class MyTlsClient extends DefaultTlsClient {
 
@@ -47,6 +40,12 @@ public class TestECDHE {
 		}
 
 		@Override
+		public void notifySecureRenegotiation(boolean secureRenegotiation)
+				throws IOException {
+
+		}
+
+		@Override
 		public ProtocolVersion getClientVersion() {
 			return ProtocolVersion.DTLSv12;
 		}
@@ -63,7 +62,6 @@ public class TestECDHE {
 	public static void main(String[] args) throws Exception {
 		DatagramSocket socket = new DatagramSocket();
 
-	
 		MyTlsClient client = new MyTlsClient();
 		DTLSClientProtocol protocol = new DTLSClientProtocol(secureRandom);
 

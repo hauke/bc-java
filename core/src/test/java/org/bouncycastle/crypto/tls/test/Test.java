@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.security.SecureRandom;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.bouncycastle.crypto.tls.Certificate;
@@ -19,8 +18,6 @@ import org.bouncycastle.crypto.tls.TlsAuthentication;
 import org.bouncycastle.crypto.tls.TlsCipherFactory;
 import org.bouncycastle.crypto.tls.TlsPSKIdentity;
 import org.bouncycastle.crypto.tls.UDPTransport;
-
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
 
 public class Test {
 
@@ -73,6 +70,11 @@ public class Test {
 
 				}
 			};
+		}
+		@Override
+		public void notifySecureRenegotiation(boolean secureRenegotiation)
+				throws IOException {
+
 		}
 
 		@Override
