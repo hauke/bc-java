@@ -15,6 +15,8 @@ public abstract class AbstractTlsServer
     protected ProtocolVersion clientVersion;
     protected int[] offeredCipherSuites;
     protected short[] offeredCompressionMethods;
+    protected short[] offeredClientCertificateFormats;
+    protected short[] offeredServerCertificateFormats;
     protected Hashtable clientExtensions;
 
     protected short maxFragmentLengthOffered;
@@ -27,6 +29,8 @@ public abstract class AbstractTlsServer
     protected ProtocolVersion serverVersion;
     protected int selectedCipherSuite;
     protected short selectedCompressionMethod;
+    protected short selectedClientCertificateFormat;
+    protected short selectedServerCertificateFormat;
     protected Hashtable serverExtensions;
 
     public AbstractTlsServer()
@@ -54,6 +58,16 @@ public abstract class AbstractTlsServer
     protected short[] getCompressionMethods()
     {
         return new short[]{CompressionMethod._null};
+    }
+
+    protected short[] getServerCertificateFormats()
+    {
+        return new short[]{TLSCertificateTye.X509};
+    }
+
+    protected short[] getClientCertificateFormats()
+    {
+        return new short[]{TLSCertificateTye.X509};
     }
 
     protected ProtocolVersion getMaximumVersion()
@@ -115,6 +129,18 @@ public abstract class AbstractTlsServer
     {
         this.offeredCompressionMethods = offeredCompressionMethods;
     }
+
+    public void notifyOfferedClientCertificateFormats(short[] offeredClientCertificateFormats)
+            throws IOException
+            {
+            this.offeredClientCertificateFormats = offeredClientCertificateFormats;
+        }
+
+    public void notifyOfferedServerCertificateFormats(short[] offeredServerCertificateFormats)
+            throws IOException
+        {
+            this.offeredServerCertificateFormats = offeredServerCertificateFormats;
+        }
 
     public void processClientExtensions(Hashtable clientExtensions)
         throws IOException
@@ -212,6 +238,34 @@ public abstract class AbstractTlsServer
             if (TlsProtocol.arrayContains(offeredCompressionMethods, compressionMethods[i]))
             {
                 return this.selectedCompressionMethod = compressionMethods[i];
+            }
+        }
+        throw new TlsFatalAlert(AlertDescription.handshake_failure);
+    }
+
+    public short getSelectedServerCertificateFormat()
+            throws IOException
+    {
+        short[] serverCertificateFormats = getServerCertificateFormats();
+        for (int i = 0; i < serverCertificateFormats.length; ++i)
+        {
+            if (TlsProtocol.arrayContains(offeredServerCertificateFormats, serverCertificateFormats[i]))
+            {
+                return this.selectedServerCertificateFormat = serverCertificateFormats[i];
+            }
+        }
+        throw new TlsFatalAlert(AlertDescription.handshake_failure);
+    }
+
+    public short getSelectedClientCertificateFormat() 
+            throws IOException
+    {
+        short[] clientCertificateFormats = getClientCertificateFormats();
+        for (int i = 0; i < clientCertificateFormats.length; ++i)
+        {
+            if (TlsProtocol.arrayContains(offeredClientCertificateFormats, clientCertificateFormats[i]))
+            {
+                return this.selectedClientCertificateFormat = clientCertificateFormats[i];
             }
         }
         throw new TlsFatalAlert(AlertDescription.handshake_failure);

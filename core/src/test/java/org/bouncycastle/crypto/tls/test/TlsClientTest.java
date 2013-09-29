@@ -12,6 +12,8 @@ import java.security.SecureRandom;
 
 import org.bouncycastle.asn1.x509.Certificate;
 import org.bouncycastle.crypto.tls.AlertLevel;
+import org.bouncycastle.crypto.tls.CertificateRaw;
+import org.bouncycastle.crypto.tls.CertificateX509;
 import org.bouncycastle.crypto.tls.CipherSuite;
 import org.bouncycastle.crypto.tls.DefaultTlsClient;
 import org.bouncycastle.crypto.tls.ProtocolVersion;
@@ -159,12 +161,18 @@ public class TlsClientTest
                 public void notifyServerCertificate(org.bouncycastle.crypto.tls.Certificate serverCertificate)
                     throws IOException
                 {
-                    Certificate[] chain = serverCertificate.getCertificateList();
-                    System.out.println("Received server certificate chain with " + chain.length + " entries");
-                    for (int i = 0; i != chain.length; i++)
+                    if (serverCertificate instanceof org.bouncycastle.crypto.tls.CertificateX509 )
                     {
-                        Certificate entry = chain[i];
-                        System.out.println("    " + entry.getSubject());
+                        Certificate[] chain = ((org.bouncycastle.crypto.tls.CertificateX509)serverCertificate).getCertificateList();
+                        System.out.println("Received server X.509 certificate chain with " + chain.length + " entries");
+                        for (int i = 0; i != chain.length; i++)
+                        {
+                            Certificate entry = chain[i];
+                            System.out.println("    " + entry.getSubject());
+                        }
+                    } else if (serverCertificate instanceof org.bouncycastle.crypto.tls.CertificateRaw )
+                    {
+                        System.out.println("Received server Raw Certificate");
                     }
                 }
             };

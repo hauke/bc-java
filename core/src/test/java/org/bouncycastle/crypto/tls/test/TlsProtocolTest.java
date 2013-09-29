@@ -178,7 +178,7 @@ public class TlsProtocolTest
             return new CertificateRequest(new short[]{ ClientCertificateType.rsa_sign }, null, null);
         }
 
-        public void notifyClientCertificate(org.bouncycastle.crypto.tls.Certificate clientCertificate)
+        public void notifyClientCertificate(org.bouncycastle.crypto.tls.CertificateX509 clientCertificate)
             throws IOException
         {
             Certificate[] chain = clientCertificate.getCertificateList();

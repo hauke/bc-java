@@ -80,9 +80,13 @@ public class TlsDHKeyExchange
             throw new TlsFatalAlert(AlertDescription.bad_certificate);
         }
 
-        org.bouncycastle.asn1.x509.Certificate x509Cert = serverCertificate.getCertificateAt(0);
+        org.bouncycastle.asn1.x509.Certificate x509Cert = null;
+        if (serverCertificate instanceof CertificateX509)
+        {
+            x509Cert = ((CertificateX509)serverCertificate).getCertificateAt(0); 
+        }
 
-        SubjectPublicKeyInfo keyInfo = x509Cert.getSubjectPublicKeyInfo();
+        SubjectPublicKeyInfo keyInfo = serverCertificate.getFirstSubjectPublicKeyInfo();
         try
         {
             this.serverPublicKey = PublicKeyFactory.createKey(keyInfo);
@@ -103,7 +107,10 @@ public class TlsDHKeyExchange
                 throw new TlsFatalAlert(AlertDescription.certificate_unknown);
             }
 
-            TlsUtils.validateKeyUsage(x509Cert, KeyUsage.keyAgreement);
+            if (x509Cert != null)
+            {
+                TlsUtils.validateKeyUsage(x509Cert, KeyUsage.keyAgreement);
+            }
         }
         else
         {
@@ -111,8 +118,10 @@ public class TlsDHKeyExchange
             {
                 throw new TlsFatalAlert(AlertDescription.certificate_unknown);
             }
-
-            TlsUtils.validateKeyUsage(x509Cert, KeyUsage.digitalSignature);
+            if (x509Cert != null)
+            {
+                TlsUtils.validateKeyUsage(x509Cert, KeyUsage.digitalSignature);
+            }
         }
 
         super.processServerCertificate(serverCertificate);

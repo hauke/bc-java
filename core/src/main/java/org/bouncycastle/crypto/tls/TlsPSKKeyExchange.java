@@ -132,9 +132,7 @@ public class TlsPSKKeyExchange
             throw new TlsFatalAlert(AlertDescription.bad_certificate);
         }
 
-        org.bouncycastle.asn1.x509.Certificate x509Cert = serverCertificate.getCertificateAt(0);
-
-        SubjectPublicKeyInfo keyInfo = x509Cert.getSubjectPublicKeyInfo();
+        SubjectPublicKeyInfo keyInfo = serverCertificate.getFirstSubjectPublicKeyInfo();
         try
         {
             this.serverPublicKey = PublicKeyFactory.createKey(keyInfo);
@@ -152,7 +150,10 @@ public class TlsPSKKeyExchange
 
         this.rsaServerPublicKey = validateRSAPublicKey((RSAKeyParameters)this.serverPublicKey);
 
-        TlsUtils.validateKeyUsage(x509Cert, KeyUsage.keyEncipherment);
+        if (serverCertificate instanceof CertificateX509) {
+        	CertificateX509 serverCertificateX509 = (CertificateX509)serverCertificate;
+            TlsUtils.validateKeyUsage(serverCertificateX509.getCertificateAt(0), KeyUsage.keyEncipherment);
+        }
 
         super.processServerCertificate(serverCertificate);
     }

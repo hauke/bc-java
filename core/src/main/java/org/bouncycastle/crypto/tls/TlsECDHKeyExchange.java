@@ -77,37 +77,13 @@ public class TlsECDHKeyExchange extends AbstractTlsKeyExchange
             throw new TlsFatalAlert(AlertDescription.bad_certificate);
         }
 
-        SubjectPublicKeyInfo keyInfo = null;
-        if (serverCertificate.isx509Certificate()) {
-            org.bouncycastle.asn1.x509.Certificate x509Cert = serverCertificate.getCertificateAt(0);
-            keyInfo = x509Cert.getSubjectPublicKeyInfo();
-            
-            if (tlsSigner == null)
-            {
-                try
-                {
-                    this.ecAgreePublicKey = TlsECCUtils.validateECPublicKey((ECPublicKeyParameters) this.serverPublicKey);
-                }
-                catch (ClassCastException e)
-                {
-                    throw new TlsFatalAlert(AlertDescription.certificate_unknown);
-                }
-
-                TlsUtils.validateKeyUsage(x509Cert, KeyUsage.keyAgreement);
-            }
-            else
-            {
-                if (!tlsSigner.isValidPublicKey(this.serverPublicKey))
-                {
-                    throw new TlsFatalAlert(AlertDescription.certificate_unknown);
-                }
-
-                TlsUtils.validateKeyUsage(x509Cert, KeyUsage.digitalSignature);
-            }
-        } else if (serverCertificate.isPubKey()) {
-        	keyInfo =serverCertificate.getRawKey();
+        org.bouncycastle.asn1.x509.Certificate x509Cert = null;
+        if (serverCertificate instanceof CertificateX509)
+        {
+            x509Cert = ((CertificateX509)serverCertificate).getCertificateAt(0);
         }
 
+        SubjectPublicKeyInfo keyInfo = serverCertificate.getFirstSubjectPublicKeyInfo();
         try
         {
             this.serverPublicKey = PublicKeyFactory.createKey(keyInfo);
@@ -115,6 +91,34 @@ public class TlsECDHKeyExchange extends AbstractTlsKeyExchange
         catch (RuntimeException e)
         {
             throw new TlsFatalAlert(AlertDescription.unsupported_certificate);
+        }
+
+        if (tlsSigner == null)
+        {
+            try
+            {
+                this.ecAgreePublicKey = TlsECCUtils.validateECPublicKey((ECPublicKeyParameters) this.serverPublicKey);
+            }
+            catch (ClassCastException e)
+            {
+                throw new TlsFatalAlert(AlertDescription.certificate_unknown);
+            }
+
+            if (x509Cert != null)
+            {
+                TlsUtils.validateKeyUsage(x509Cert, KeyUsage.keyAgreement);
+            }
+        }
+        else
+        {
+            if (!tlsSigner.isValidPublicKey(this.serverPublicKey))
+            {
+                throw new TlsFatalAlert(AlertDescription.certificate_unknown);
+            }
+            if (x509Cert != null)
+            {
+                TlsUtils.validateKeyUsage(x509Cert, KeyUsage.digitalSignature);
+            }
         }
 
         super.processServerCertificate(serverCertificate);
