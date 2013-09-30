@@ -150,7 +150,7 @@ public class DTLSServerProtocol
             state.keyExchange.processServerCredentials(state.serverCredentials);
 
             serverCertificate = state.serverCredentials.getCertificate();
-            byte[] certificateBody = generateCertificate(serverCertificate);
+            byte[] certificateBody = generateCertificate(serverCertificate, state.selectedServerCertificateFormat);
             handshake.sendMessage(HandshakeType.certificate, certificateBody);
         }
 
@@ -231,7 +231,13 @@ public class DTLSServerProtocol
                     throw new TlsFatalAlert(AlertDescription.unexpected_message);
                 }
 
-                notifyClientCertificate(state, Certificate.EMPTY_CHAIN);
+                if (state.selectedClientCertificateFormat == TLSCertificateTye.X509)
+                {
+                    notifyClientCertificate(state, CertificateX509.EMPTY_CHAIN);
+                } else if (state.selectedClientCertificateFormat == TLSCertificateTye.Raw)
+                {
+                    notifyClientCertificate(state, CertificateRaw.EMPTY_CHAIN);
+                }
             }
         }
 
@@ -456,7 +462,14 @@ public class DTLSServerProtocol
     {
         ByteArrayInputStream buf = new ByteArrayInputStream(body);
 
-        Certificate clientCertificate = Certificate.parse(buf);
+        Certificate clientCertificate = null;
+        if (state.selectedClientCertificateFormat == TLSCertificateTye.Raw)
+        {
+            clientCertificate = CertificateRaw.parse(buf);
+        } else if (state.selectedClientCertificateFormat == TLSCertificateTye.X509)
+        {
+            clientCertificate = CertificateX509.parse(buf);
+        }
 
         TlsProtocol.assertEmpty(buf);
 
@@ -479,7 +492,7 @@ public class DTLSServerProtocol
             byte[] certificateVerifyHash = TlsProtocol.getCurrentPRFHash(state.serverContext, prepareFinishHash, null);
 
             org.bouncycastle.asn1.x509.Certificate x509Cert = state.clientCertificate.getCertificateAt(0);
-            SubjectPublicKeyInfo keyInfo = x509Cert.getSubjectPublicKeyInfo();
+            SubjectPublicKeyInfo keyInfo = state.clientCertificate.getFirstSubjectPublicKeyInfo();
             AsymmetricKeyParameter publicKey = PublicKeyFactory.createKey(keyInfo);
 
             TlsSigner tlsSigner = TlsUtils.createTlsSigner(state.clientCertificateType);
@@ -636,6 +649,8 @@ public class DTLSServerProtocol
         Hashtable clientExtensions;
         int selectedCipherSuite = -1;
         short selectedCompressionMethod = -1;
+        short selectedServerCertificateFormat = TLSCertificateTye.X509;
+        short selectedClientCertificateFormat = TLSCertificateTye.X509;
         boolean secure_renegotiation = false;
         short maxFragmentLength = -1;
         boolean allowCertificateStatus = false;
