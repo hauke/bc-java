@@ -23,6 +23,9 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
  */
 public class CertificateRaw implements Certificate
 {
+    
+    public static final CertificateRaw EMPTY_CHAIN = new CertificateRaw(null);
+    
     protected org.bouncycastle.asn1.x509.SubjectPublicKeyInfo pubKey;
 
     public CertificateRaw(org.bouncycastle.asn1.x509.SubjectPublicKeyInfo pubKey)
@@ -61,12 +64,18 @@ public class CertificateRaw implements Certificate
      * @param output the {@link OutputStream} to encode to.
      * @throws IOException
      */
-    public void encode(OutputStream output)
-        throws IOException
+    public void encode(OutputStream output) throws IOException
     {
-        byte[] derEncoding = pubKey.getEncoded(ASN1Encoding.DER);
-        TlsUtils.writeUint24(derEncoding.length + 3, output);
-        TlsUtils.writeOpaque24(derEncoding, output);
+        if (pubKey != null)
+        {
+            byte[] derEncoding = pubKey.getEncoded(ASN1Encoding.DER);
+            TlsUtils.writeUint24(derEncoding.length + 3, output);
+            TlsUtils.writeOpaque24(derEncoding, output);
+        } else
+        {
+            TlsUtils.writeUint24(0 + 3, output);
+            TlsUtils.writeOpaque24(new byte[0], output);
+        }
     }
     
     /**
