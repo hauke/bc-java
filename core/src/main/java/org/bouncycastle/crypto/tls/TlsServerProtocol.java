@@ -125,7 +125,7 @@ public class TlsServerProtocol
                     this.keyExchange.processServerCredentials(this.serverCredentials);
 
                     serverCertificate = this.serverCredentials.getCertificate();
-                    sendCertificateMessage(serverCertificate);
+                    sendCertificateMessage(serverCertificate, tlsServer.getServerCertificateType());
                 }
                 this.connection_state = CS_SERVER_CERTIFICATE;
 
@@ -255,7 +255,11 @@ public class TlsServerProtocol
                     }
                     else
                     {
-                        notifyClientCertificate(Certificate.EMPTY_CHAIN);
+                    	if(tlsServer.getClientCertificateType() == TLSCertificateTye.X509) {
+                            notifyClientCertificate(CertificateX509.EMPTY_CHAIN);
+                    	}else if(tlsServer.getClientCertificateType() == TLSCertificateTye.X509) {
+                    		notifyClientCertificate(CertificateRaw.EMPTY_CHAIN);	
+                    	}
                     }
                 }
                 // NB: Fall through to next case label
@@ -356,7 +360,11 @@ public class TlsServerProtocol
              */
             if (TlsUtils.isSSL(getContext()) && certificateRequest != null)
             {
-                notifyClientCertificate(Certificate.EMPTY_CHAIN);
+            	if(tlsServer.getClientCertificateType() == TLSCertificateTye.X509) {
+                notifyClientCertificate(CertificateX509.EMPTY_CHAIN);
+            	} else if(tlsServer.getClientCertificateType() == TLSCertificateTye.Raw) {
+            		notifyClientCertificate(CertificateRaw.EMPTY_CHAIN);	
+            	}
             }
             break;
         }
@@ -415,7 +423,12 @@ public class TlsServerProtocol
     protected void receiveCertificateMessage(ByteArrayInputStream buf)
         throws IOException
     {
-        Certificate clientCertificate = Certificate.parse(buf);
+    	Certificate clientCertificate = null;
+    	if (tlsServer.getClientCertificateType() == TLSCertificateTye.X509){ 
+            clientCertificate = CertificateX509.parse(buf);
+    	} else if (tlsServer.getClientCertificateType() == TLSCertificateTye.Raw){
+    		clientCertificate = CertificateRaw.parse(buf);
+    	}
 
         assertEmpty(buf);
 
@@ -436,7 +449,7 @@ public class TlsServerProtocol
             byte[] certificateVerifyHash = getCurrentPRFHash(getContext(), prepareFinishHash, null);
 
             org.bouncycastle.asn1.x509.Certificate x509Cert = this.peerCertificate.getCertificateAt(0);
-            SubjectPublicKeyInfo keyInfo = x509Cert.getSubjectPublicKeyInfo();
+            SubjectPublicKeyInfo keyInfo = this.peerCertificate.getFirstSubjectPublicKeyInfo();
             AsymmetricKeyParameter publicKey = PublicKeyFactory.createKey(keyInfo);
 
             TlsSigner tlsSigner = TlsUtils.createTlsSigner(this.clientCertificateType);

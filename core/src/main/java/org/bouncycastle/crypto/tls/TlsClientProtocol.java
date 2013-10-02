@@ -155,7 +155,11 @@ public class TlsClientProtocol
             {
                 // Parse the Certificate message and send to cipher suite
 
-                this.peerCertificate = Certificate.parse(buf);
+            	if (tlsClient.getServerCertificateType() == TLSCertificateTye.X509) {
+                     this.peerCertificate = CertificateX509.parse(buf);
+            	} else if (tlsClient.getServerCertificateType() == TLSCertificateTye.Raw) {
+            		 this.peerCertificate = CertificateRaw.parse(buf);	
+            	}
 
                 assertEmpty(buf);
 
@@ -363,13 +367,17 @@ public class TlsClientProtocol
                          * 
                          * NOTE: In previous RFCs, this was SHOULD instead of MUST.
                          */
-                        sendCertificateMessage(Certificate.EMPTY_CHAIN);
+                        if (tlsClient.getClientCertificateType() == TLSCertificateTye.X509) {
+                            sendCertificateMessage(CertificateX509.EMPTY_CHAIN, tlsClient.getClientCertificateType());
+                        } else if (tlsClient.getClientCertificateType() == TLSCertificateTye.Raw) {
+                        	sendCertificateMessage(CertificateRaw.EMPTY_CHAIN, tlsClient.getClientCertificateType());	
+                        }
                     }
                     else
                     {
                         this.keyExchange.processClientCredentials(clientCreds);
 
-                        sendCertificateMessage(clientCreds.getCertificate());
+                        sendCertificateMessage(clientCreds.getCertificate(), tlsClient.getClientCertificateType());
                     }
                 }
 

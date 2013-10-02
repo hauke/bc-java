@@ -21,6 +21,10 @@ public interface TlsPeer
 
     TlsCipher getCipher() throws IOException;
 
+    short getServerCertificateType();
+
+    short getClientCertificateType();
+
     /**
      * This method will be called when an alert is raised by the protocol.
      *

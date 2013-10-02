@@ -274,4 +274,12 @@ public abstract class AbstractTlsClient
         throws IOException
     {
     }
+
+    public short getServerCertificateType() {
+    	return selectedServerCertificateFormat;
+    }
+
+    public short getClientCertificateType() {
+    	return selectedClientCertificateFormat;
+    }
 }

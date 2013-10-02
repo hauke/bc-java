@@ -690,12 +690,15 @@ public abstract class TlsProtocol
         raiseAlert(AlertLevel.warning, alertDescription, message, null);
     }
 
-    protected void sendCertificateMessage(Certificate certificate)
+    protected void sendCertificateMessage(Certificate certificate, short type)
         throws IOException
     {
         if (certificate == null)
-        {
-            certificate = Certificate.EMPTY_CHAIN;
+        { if (type == TLSCertificateTye.X509) {
+            certificate = CertificateX509.EMPTY_CHAIN;
+        } else if (type == TLSCertificateTye.Raw) {
+        	certificate = CertificateRaw.EMPTY_CHAIN;
+        }
         }
 
         if (certificate.getLength() == 0)
