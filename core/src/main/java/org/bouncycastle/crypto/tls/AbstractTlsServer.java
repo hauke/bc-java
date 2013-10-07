@@ -60,15 +60,23 @@ public abstract class AbstractTlsServer
         return new short[]{CompressionMethod._null};
     }
 
-    protected short[] getServerCertificateFormats()
+    protected short[] getServerCertificateFormats() throws IOException
     {
         return new short[]{TLSCertificateTye.X509};
     }
 
-    protected short[] getClientCertificateFormats()
+    protected short[] getClientCertificateFormats()throws IOException
     {
         return new short[]{TLSCertificateTye.X509};
     }
+    
+	public short getServerCertificateType() {
+        return selectedServerCertificateFormat;
+	}
+
+	public short getClientCertificateType() {
+		return selectedClientCertificateFormat;
+	}
 
     protected ProtocolVersion getMaximumVersion()
     {

@@ -17,7 +17,7 @@ public class UDPTransport
     public UDPTransport(DatagramSocket socket, int mtu)
         throws IOException
     {
-        if (!socket.isBound() || !socket.isConnected())
+        if (!socket.isBound())
         {
             throw new IllegalArgumentException("'socket' must be bound and connected");
         }
