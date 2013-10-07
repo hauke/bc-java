@@ -30,11 +30,6 @@ public class CertificateRaw implements Certificate
 
     public CertificateRaw(org.bouncycastle.asn1.x509.SubjectPublicKeyInfo pubKey)
     {
-        if (pubKey == null)
-        {
-            throw new IllegalArgumentException("'Public key' cannot be null");
-        }
-
         this.pubKey = pubKey;
     }
 

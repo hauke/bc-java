@@ -73,6 +73,7 @@ public class DTLSServerProtocol
         }
         catch (RuntimeException e)
         {
+        	e.printStackTrace();
             recordLayer.fail(AlertDescription.internal_error);
             throw new TlsFatalAlert(AlertDescription.internal_error);
         }
