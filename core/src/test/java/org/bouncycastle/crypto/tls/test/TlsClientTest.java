@@ -5,14 +5,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.security.SecureRandom;
 
 import org.bouncycastle.asn1.x509.Certificate;
 import org.bouncycastle.crypto.tls.AlertLevel;
-import org.bouncycastle.crypto.tls.CertificateRaw;
-import org.bouncycastle.crypto.tls.CertificateX509;
 import org.bouncycastle.crypto.tls.CipherSuite;
 import org.bouncycastle.crypto.tls.DefaultTlsClient;
 import org.bouncycastle.crypto.tls.ProtocolVersion;
@@ -20,6 +19,9 @@ import org.bouncycastle.crypto.tls.ServerOnlyTlsAuthentication;
 import org.bouncycastle.crypto.tls.TlsAuthentication;
 import org.bouncycastle.crypto.tls.TlsClient;
 import org.bouncycastle.crypto.tls.TlsClientProtocol;
+import org.bouncycastle.crypto.tls.TlsSession;
+import org.bouncycastle.util.Arrays;
+import org.bouncycastle.util.encoders.Hex;
 
 /**
  * A simple test designed to conduct a TLS handshake with an external TLS server.

@@ -1,14 +1,22 @@
 package org.bouncycastle.crypto.tls.test;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.io.PrintStream;
 import java.security.SecureRandom;
 
 import junit.framework.TestCase;
+import org.bouncycastle.asn1.x509.Certificate;
 
+import org.bouncycastle.crypto.tls.AlertLevel;
+import org.bouncycastle.crypto.tls.CertificateRequest;
+import org.bouncycastle.crypto.tls.ClientCertificateType;
 import org.bouncycastle.crypto.tls.TlsClientProtocol;
+import org.bouncycastle.crypto.tls.TlsEncryptionCredentials;
 import org.bouncycastle.crypto.tls.TlsServerProtocol;
+import org.bouncycastle.crypto.tls.TlsSignerCredentials;
 import org.bouncycastle.util.Arrays;
 import org.bouncycastle.util.io.Streams;
 
